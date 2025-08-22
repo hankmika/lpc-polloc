@@ -1,0 +1,22 @@
+# LibApi
+config.php
+
+# Composer
+composer.phar
+/vendor/
+composer.lock
+
+# OS footprints and other garbage we don't want
+.DS_Store
+*[Tt]humbs.db
+*.Trashes
+~*
+
+# Lando
+.lando.yml
+
+# Custom
+/_res/
+
+# Test cache
+.phpunit.*.cache
