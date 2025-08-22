@@ -36,6 +36,26 @@ if (
     isset($_FILES['csv_file']) &&
     $_FILES['csv_file']['error'] === UPLOAD_ERR_OK
 ) {
+    $file = $_FILES['csv_file'];
+    $maxSize = 5 * 1024 * 1024;
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if ($ext !== 'csv') {
+        render_form('Please upload a .csv file.');
+        exit;
+    }
+    if ($file['size'] > $maxSize) {
+        render_form('File is too large. Maximum size is 5MB.');
+        exit;
+    }
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    $allowed = ['text/plain', 'text/csv', 'application/vnd.ms-excel'];
+    if (!in_array($mime, $allowed, true)) {
+        render_form('Invalid file type. Please upload a CSV file.');
+        exit;
+    }
+
     $msgs = [];
     $conn = mysqli_connect($servername, $username, $password, $dbname);
     if (!$conn) {
@@ -68,8 +88,8 @@ SQL;
 
     $uploadDir = __DIR__ . '/uploads';
     if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-    $targetFile = $uploadDir . '/' . basename($_FILES['csv_file']['name']);
-    if (!move_uploaded_file($_FILES['csv_file']['tmp_name'], $targetFile)) {
+    $targetFile = $uploadDir . '/' . basename($file['name']);
+    if (!move_uploaded_file($file['tmp_name'], $targetFile)) {
         fail('Failed to move uploaded file.');
     }
 
