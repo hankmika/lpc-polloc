@@ -2,11 +2,7 @@
 // Allow this script to run as long as it needs
 set_time_limit(0);
 
-// --- Database configuration ---
-$servername = '';
-$username   = 'db_dom40916';
-$password   = '';
-$dbname     = 'db_dom40916';
+require_once __DIR__ . '/config.php';
 
 // --- 1) Connect to MySQL via mysqli ---
 $conn = mysqli_connect($servername, $username, $password, $dbname);

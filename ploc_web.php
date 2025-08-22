@@ -2,11 +2,7 @@
 // Remove execution time limits for processing a large file.
 set_time_limit(0);
 
-// Define database connection parameters.
-$servername = 'vps-canada-thefederalliberalagencyofcanada-8.cluster-cjap9qrjv8vo.ca-central-1.rds.amazonaws.com';
-$username   = 'db_dom40916';
-$password   = 'fi/XCARDog6uy/8JQO2fqQvJ0Th6ZffOyD3Nsvhw';
-$dbname     = 'db_dom40916';
+require_once __DIR__ . '/config.php';
 
 // If form was submitted and file uploaded without error...
 if (
