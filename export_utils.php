@@ -1,16 +1,9 @@
 <?php
+require_once __DIR__ . '/db.php';
+
 function generate_export($isReg = false) {
-    // Allow this script to run as long as it needs
     set_time_limit(0);
-
-    // Load DB config
-    require __DIR__ . '/config.php';
-
-    // Connect to MySQL via mysqli
-    $conn = mysqli_connect($servername, $username, $password, $dbname);
-    if (!$conn) {
-        die("DB connect error: " . mysqli_connect_error());
-    }
+    $conn = db_connect();
 
     if ($isReg) {
         $sql = "
@@ -55,12 +48,15 @@ function generate_export($isReg = false) {
 
     $result = mysqli_query($conn, $sql);
     if (!$result) {
-        die("Query error: " . mysqli_error($conn));
+        mysqli_close($conn);
+        throw new Exception('Query error: ' . mysqli_error($conn));
     }
 
     $fp = fopen($outputFile, 'w');
     if (!$fp) {
-        die("Cannot open output file for writing.");
+        mysqli_free_result($result);
+        mysqli_close($conn);
+        throw new Exception('Cannot open output file for writing.');
     }
 
     $headers = [
