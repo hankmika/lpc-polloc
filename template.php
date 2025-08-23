@@ -5,16 +5,16 @@ function render_template($title, $body) {
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{$title}</title>
-<style>
-body{font-family:Arial,sans-serif;margin:2em;}
-a.button{display:inline-block;margin:0.5em;padding:0.5em 1em;background:#007bff;color:#fff;text-decoration:none;border-radius:4px;}
-a.button:hover{background:#0056b3;}
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<div class="container">
 {$body}
+</div>
 </body>
 </html>
 HTML;
 }
+

@@ -1,0 +1,48 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 2em;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+input[type="file"],
+button {
+  padding: 0.5em;
+  font-size: 1em;
+}
+
+.button,
+button {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover,
+button:hover {
+  background: #0056b3;
+}
+
+@media (max-width: 600px) {
+  body {
+    margin: 1em;
+  }
+
+  .button,
+  button {
+    width: 100%;
+  }
+}
