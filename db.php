@@ -13,10 +13,11 @@ function import_election_sites($csvFile) {
     $conn = db_connect();
     $msgs = ['<p>✔ Connected to DB</p>'];
 
-    mysqli_query($conn, 'DROP TABLE IF EXISTS election_sites')
-        or throw new Exception('Drop error: ' . mysqli_error($conn));
+    try {
+        mysqli_query($conn, 'DROP TABLE IF EXISTS election_sites')
+            or throw new Exception('Drop error: ' . mysqli_error($conn));
 
-    $createSQL = <<<SQL
+        $createSQL = <<<SQL
 CREATE TABLE election_sites (
         id INT AUTO_INCREMENT PRIMARY KEY,
         electoral_district VARCHAR(255),
@@ -33,13 +34,13 @@ CREATE TABLE election_sites (
         postal_code VARCHAR(20)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 SQL;
-    mysqli_query($conn, $createSQL)
-        or throw new Exception('Create table error: ' . mysqli_error($conn));
-    $msgs[] = '<p>✔ Table election_sites is ready</p>';
+        mysqli_query($conn, $createSQL)
+            or throw new Exception('Create table error: ' . mysqli_error($conn));
+        $msgs[] = '<p>✔ Table election_sites is ready</p>';
 
-    mysqli_options($conn, MYSQLI_OPT_LOCAL_INFILE, true);
-    $infile = mysqli_real_escape_string($conn, $csvFile);
-    $loadSQL = <<<SQL
+        mysqli_options($conn, MYSQLI_OPT_LOCAL_INFILE, true);
+        $infile = mysqli_real_escape_string($conn, $csvFile);
+        $loadSQL = <<<SQL
 LOAD DATA LOCAL INFILE '$infile'
 INTO TABLE election_sites
 FIELDS TERMINATED BY ','
@@ -50,16 +51,16 @@ IGNORE 3 LINES
  site_name_en, site_name_fr, address_en, address_fr,
  municipality_en, municipality_fr, province, postal_code)
 SQL;
-    mysqli_query($conn, $loadSQL)
-        or throw new Exception('LOAD DATA error: ' . mysqli_error($conn));
-    $msgs[] = '<p>✔ Bulk import complete</p>';
+        mysqli_query($conn, $loadSQL)
+            or throw new Exception('LOAD DATA error: ' . mysqli_error($conn));
+        $msgs[] = '<p>✔ Bulk import complete</p>';
 
-    $idxSQL = 'ALTER TABLE election_sites ADD INDEX idx_merge (electoral_district, pd_sv)';
-    mysqli_query($conn, $idxSQL)
-        or throw new Exception('Index error: ' . mysqli_error($conn));
-    $msgs[] = '<p>✔ Composite index added</p>';
+        $idxSQL = 'ALTER TABLE election_sites ADD INDEX idx_merge (electoral_district, pd_sv)';
+        mysqli_query($conn, $idxSQL)
+            or throw new Exception('Index error: ' . mysqli_error($conn));
+        $msgs[] = '<p>✔ Composite index added</p>';
 
-    $updateSQL = <<<SQL
+        $updateSQL = <<<SQL
 UPDATE election_sites AS m
 JOIN election_sites AS t
   ON m.electoral_district = t.electoral_district
@@ -75,11 +76,11 @@ SET
         m.postal_code     = t.postal_code
 WHERE m.site_name_en LIKE 'Merged with %'
 SQL;
-    mysqli_query($conn, $updateSQL)
-        or throw new Exception('Merge-rows UPDATE error: ' . mysqli_error($conn));
-    $msgs[] = '<p>✔ Merged-with rows updated</p>';
+        mysqli_query($conn, $updateSQL)
+            or throw new Exception('Merge-rows UPDATE error: ' . mysqli_error($conn));
+        $msgs[] = '<p>✔ Merged-with rows updated</p>';
 
-    $stripA_SQL = <<<SQL
+        $stripA_SQL = <<<SQL
         UPDATE election_sites
         SET pd_sv = CASE
                 WHEN pd_sv LIKE '%-A' THEN SUBSTRING_INDEX(pd_sv, '-', 2)
@@ -88,19 +89,19 @@ SQL;
         WHERE pd_sv LIKE '%-A'
            OR pd_sv LIKE '%A'
 SQL;
-    mysqli_query($conn, $stripA_SQL)
-        or throw new Exception('Strip suffix error: ' . mysqli_error($conn));
-    $msgs[] = "<p>✔ Stripped both '-A' and 'A' suffixes from pd_sv codes</p>";
+        mysqli_query($conn, $stripA_SQL)
+            or throw new Exception('Strip suffix error: ' . mysqli_error($conn));
+        $msgs[] = "<p>✔ Stripped both '-A' and 'A' suffixes from pd_sv codes</p>";
 
-    $deleteSQL = "
+        $deleteSQL = "
           DELETE FROM election_sites
           WHERE pd_sv RLIKE '^[0-9]+-[0-9]+(-?[A-Za-z])$'
         ";
-    mysqli_query($conn, $deleteSQL)
-        or throw new Exception('Delete suffixed duplicates error: ' . mysqli_error($conn));
-    $msgs[] = "<p>✔ Deleted all rows whose pd_sv still had a letter suffix</p>";
+        mysqli_query($conn, $deleteSQL)
+            or throw new Exception('Delete suffixed duplicates error: ' . mysqli_error($conn));
+        $msgs[] = "<p>✔ Deleted all rows whose pd_sv still had a letter suffix</p>";
 
-    $deleteDuplicatesSQL = <<<SQL
+        $deleteDuplicatesSQL = <<<SQL
         DELETE t1
         FROM election_sites AS t1
         JOIN election_sites AS t2
@@ -108,14 +109,17 @@ SQL;
          AND t1.pd_sv = t2.pd_sv
          AND t1.id      > t2.id
 SQL;
-    mysqli_query($conn, $deleteDuplicatesSQL)
-        or throw new Exception('Duplicate-cleanup error: ' . mysqli_error($conn));
-    $msgs[] = '<p>✔ Removed duplicate pd_sv rows, kept lowest-id</p>';
+        mysqli_query($conn, $deleteDuplicatesSQL)
+            or throw new Exception('Duplicate-cleanup error: ' . mysqli_error($conn));
+        $msgs[] = '<p>✔ Removed duplicate pd_sv rows, kept lowest-id</p>';
 
-    mysqli_close($conn);
-    unlink($csvFile);
-
-    return $msgs;
+        return $msgs;
+    } finally {
+        mysqli_close($conn);
+        if (file_exists($csvFile)) {
+            unlink($csvFile);
+        }
+    }
 }
 
 ?>

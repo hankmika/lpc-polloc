@@ -1,9 +1,10 @@
 <?php
 session_start();
+require_once __DIR__ . '/template.php';
 if (!isset($_SESSION['download_token'], $_GET['token']) ||
     !hash_equals($_SESSION['download_token'], $_GET['token'])) {
     http_response_code(403);
-    exit('Invalid download token.');
+    render_error('Invalid download token.');
 }
 unset($_SESSION['download_token']);
 
@@ -26,5 +27,5 @@ if (file_exists($filename)) {
     exit;
 }
 http_response_code(404);
-echo "File not found.";
+render_error('File not found.');
 ?>

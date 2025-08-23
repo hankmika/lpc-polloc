@@ -32,11 +32,6 @@ function render_success($messages) {
     render_template('Import Election CSV', $body);
 }
 
-function fail($msg) {
-    render_template('Import Election CSV', "<p>{$msg}</p>");
-    exit;
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (
         isset($_FILES['csv_file'], $_POST['token'], $_SESSION['upload_token']) &&
@@ -48,35 +43,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $maxSize = 5 * 1024 * 1024;
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         if ($ext !== 'csv') {
-            render_form('Please upload a .csv file.');
-            exit;
+            render_error('Please upload a .csv file.');
         }
         if ($file['size'] > $maxSize) {
-            render_form('File is too large. Maximum size is 5MB.');
-            exit;
+            render_error('File is too large. Maximum size is 5MB.');
         }
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mime = finfo_file($finfo, $file['tmp_name']);
         finfo_close($finfo);
         $allowed = ['text/plain', 'text/csv', 'application/vnd.ms-excel'];
         if (!in_array($mime, $allowed, true)) {
-            render_form('Invalid file type. Please upload a CSV file.');
-            exit;
+            render_error('Invalid file type. Please upload a CSV file.');
         }
         $uploadDir = __DIR__ . '/uploads';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
         $targetFile = $uploadDir . '/' . basename($file['name']);
         if (!move_uploaded_file($file['tmp_name'], $targetFile)) {
-            fail('Failed to move uploaded file.');
+            render_error('Failed to move uploaded file.');
         }
         try {
             $msgs = import_election_sites($targetFile);
             render_success($msgs);
         } catch (Exception $e) {
-            fail($e->getMessage());
+            render_error($e->getMessage());
         }
     } else {
-        render_form('Invalid form submission.');
+        render_error('Invalid form submission.');
     }
 } else {
     render_form();
