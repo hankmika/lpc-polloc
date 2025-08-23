@@ -12,7 +12,8 @@ function render_form($error = '') {
     $token = htmlspecialchars($_SESSION['upload_token'], ENT_QUOTES, 'UTF-8');
     ob_start();
     if ($error) {
-        echo "<p><em>{$error}</em></p>";
+        $err = htmlspecialchars($error, ENT_QUOTES, 'UTF-8');
+        echo "<p><em>{$err}</em></p>";
     }
     ?>
     <h2>Upload Your CSV</h2>
@@ -34,8 +35,9 @@ function render_success($messages) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (
-        isset($_FILES['csv_file'], $_POST['token'], $_SESSION['upload_token']) &&
-        hash_equals($_SESSION['upload_token'], $_POST['token']) &&
+        isset($_FILES['csv_file'], $_SESSION['upload_token']) &&
+        ($postToken = filter_input(INPUT_POST, 'token')) !== null &&
+        hash_equals($_SESSION['upload_token'], $postToken) &&
         $_FILES['csv_file']['error'] === UPLOAD_ERR_OK
     ) {
         unset($_SESSION['upload_token']);

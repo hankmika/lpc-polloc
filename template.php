@@ -1,5 +1,6 @@
 <?php
 function render_template($title, $body) {
+    $title = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
     echo <<<HTML
 <!DOCTYPE html>
 <html>

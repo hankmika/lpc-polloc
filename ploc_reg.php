@@ -7,7 +7,8 @@ generate_export(true);
 
 $token = bin2hex(random_bytes(32));
 $_SESSION['download_token'] = $token;
-
-$body = '<p>Export complete. <a class="button" href="ploc_adv_download.php?reg=1&token=' . urlencode($token) . '">Download the file</a></p>';
+$file = 'export_reg.txt';
+$href = 'ploc_adv_download.php?file=' . urlencode($file) . '&token=' . urlencode($token);
+$body = '<p>Export complete. <a class="button" href="' . htmlspecialchars($href, ENT_QUOTES, 'UTF-8') . '">Download the file</a></p>';
 render_template('Regular Export', $body);
 ?>
