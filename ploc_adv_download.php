@@ -20,6 +20,9 @@ $filename = __DIR__ . '/export' . ( isset($_GET['reg']) ? '_reg' : '' ) . '.txt'
 
 if (file_exists($filename)) {
     readfile($filename);
+    if (!unlink($filename)) {
+        error_log("Failed to delete file: $filename");
+    }
     exit;
 }
 http_response_code(404);
